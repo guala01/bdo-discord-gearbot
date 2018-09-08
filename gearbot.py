@@ -60,7 +60,7 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-    read_gear_list() #this will fail if gearlist file is empty of not there at all
+    read_gear_list() #this will fail if gearlist file is empty or not there at all
 
 
 @client.event
