@@ -5,3 +5,5 @@ Bot will works with simple !gear command and has remove and sheet update feature
 To run it you have to obtain google api auth file + unlock sheet and drive api. pip install discord, gspread, oauth2client, PyOpenSSL and validators (check gspread docs to install those 3).
 
 To run it comment out read_gearlist on bot starup and submit a gear then remove the comment and it will run with no issues, have yet to fix it.
+
+Lolzy#3416 for questions, bug or random memes.
