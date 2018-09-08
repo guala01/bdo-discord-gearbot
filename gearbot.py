@@ -48,7 +48,7 @@ def get_date(message):
     date = date[0]
     return date
 
-#return the content of the msg so famn name + reason for absence
+#return the content of the msg 
 def get_msg_content(message):
     content = message.split(" ", 1)
     content = content[1]
@@ -108,7 +108,7 @@ async def on_message(message):
                 else:
                    await client.send_message(message.channel,"Gear not found!")
             else:
-                await client.send_message(message.channel, "Use !gear + @someone you baka!")
+                await client.send_message(message.channel, "Use !gear + @someone!")
 
     elif message.content.startswith('!remove'):
         eval = await is_officer(message)
@@ -125,7 +125,7 @@ async def on_message(message):
                 await client.send_message(message.channel, "Gear not found!")
         else:  
             await client.send_message(message.channel,
-                                      "You ain't a maid you bitch")
+                                      "You ain't a maid!")
 
 
 
@@ -154,10 +154,10 @@ async def on_message(message):
                 wks.update_cells(cell_gearpic_list)
                 await client.send_message(message.channel, "Gear updated on the sheet!")
             except:
-                await client.send_message(message.channel, "API Error cause google is a giant cunt") #I don't like google api
+                await client.send_message(message.channel, "API Error") #most likely issues with the token
         else:  
             await client.send_message(message.channel,
-                                      "You ain't a maid you bitch")
+                                      "You ain't a maid!")
 	elif message.content.startswith('!check'): #self explanatory just counts how many entries we have got so far
         eval = await is_officer(message)
         if eval:
@@ -169,7 +169,7 @@ async def on_message(message):
                 await client.send_message(message.channel, "Number of cunts that submitted their gear: " + i)
         else:  
             await client.send_message(message.channel,
-                                      "You ain't a maid you bitch")
+                                      "You ain't a maid!")
 
 
 client.run('')#add your bot token here
