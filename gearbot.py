@@ -18,8 +18,15 @@ def write_gear_list():
         pickle.dump(GEARdict, fp)
 def read_gear_list():
     global GEARdict
-    with open('gearlist', 'rb+') as fp:
-        GEARdict = pickle.load(fp)
+    try:
+        with open('gearlist', 'rb') as fp:
+            GEARdict = pickle.load(fp)
+    except IOError: #no file
+        fp = open('gearlist', 'w+')
+        GEARdict = defaultdict(list)
+    except EOFError: #file empty
+        GEARdict = defaultdict(list)
+            
 
 async def is_officer(message): 
     if "maids" in [y.name.lower() for y in message.author.roles]: 
@@ -33,6 +40,7 @@ scope = ['https://spreadsheets.google.com/feeds',
 credentials = ServiceAccountCredentials.from_json_keyfile_name('', scope)
 
 gc = gspread.authorize(credentials)
+
 
 sh = gc.open_by_url("") #sheet url here
 wks = sh.worksheet("") #replace with sheet tab name here
@@ -54,6 +62,25 @@ def get_msg_content(message):
     content = content[1]
     return content
 
+def class_check(class_name):
+    if class_name == 'DK':
+        bdoclass = 'Dark Knight'
+    elif class_name == 'dk':
+        bdoclass = 'Dark Knight'
+    elif class_name == 'valk':
+        bdoclass = 'Valkyrie'
+    elif class_name == 'wizard':
+        bdoclass = 'Wizard'
+    elif class_name == 'wiz':
+        bdoclass = 'Wizard' 
+    elif class_name == 'sorc':
+        bdoclass = 'Sorceress'
+    elif class_name == 'kuno':
+        bdoclass = 'Kunoichi' 
+    else:
+        bdoclass = class_name.title()
+    return bdoclass
+
 @client.event
 async def on_ready():
     print('Logged in as')
@@ -66,7 +93,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
     if message.content.startswith('!gear'):
-        if message.channel.id == '': #change channel id here
+        if message.channel.id == '465920848738385920': #change channel id here
             msg = format_input("!gear", message.content) #cleanup the message
             if message.mentions == []: #if there's no mentions it means you want to add/update gears otherwise pull the mentioned gear out
                 msg_list = msg.split(" ",8) #split the msg in multiple args
@@ -112,22 +139,7 @@ async def on_message(message):
                         if key == id:
                             userID = await client.get_user_info(key)
                             list = GEARdict[key]
-                            if list[3] == 'DK':
-                                bdoclass = 'Dark Knight'
-                            elif list[3] == 'dk':
-                                bdoclass = 'Dark Knight'
-                            elif list[3] == 'valk':
-                                bdoclass = 'Valkyrie'
-                            elif list[3] == 'wizard':
-                                bdoclass = 'Wizard'
-                            elif list[3] == 'wiz':
-                                bdoclass = 'Wizard' 
-                            elif list[3] == 'sorc':
-                                bdoclass = 'Sorceress'
-                            elif list[3] == 'kuno':
-                                bdoclass = 'Kunoichi' 
-                            else:
-                                bdoclass = list[3].title()                            
+                            bdoclass = class_check(list[3])                            
                             picurl = list[7].strip()
                             gs = int(((int(list[4]) + int(list[5])) / 2) + int(list[6]))
                             stringfix = list[1] + " " + list[0] + "**\nClass: **" + bdoclass + "**\nLvl: **"+ list[2] + "**\nGS: **" + str(gs)
@@ -143,7 +155,6 @@ async def on_message(message):
                        await client.send_message(message.channel,"Gear not found!")
                 else:
                     await client.send_message(message.channel, "Use !gear + @someone!")
-
 
     elif message.content.startswith('!remove'):
         eval = await is_officer(message)
@@ -178,7 +189,6 @@ async def on_message(message):
             await client.send_message(message.channel,
                                       "You ain't a maid!")
 
-
     elif message.content.startswith('!sheet'):  
         eval = await is_officer(message)
         if eval:
@@ -187,7 +197,7 @@ async def on_message(message):
             cell_name_list = wks.range('A1:A100') #init enough lists to fill the sheet later
             cell_family_list = wks.range('B1:B100')
             cell_character_list = wks.range('C1:C100')
-            cell_lvl_list = wks.range('D1:C100')
+            cell_lvl_list = wks.range('D1:D100')
             cell_class_list = wks.range('E1:E100')
             cell_ap_list = wks.range('F1:F100')
             cell_awaap_list = wks.range('G1:G100')
@@ -198,10 +208,11 @@ async def on_message(message):
                 new_key = user.name
                 cell_name_list[i].value = new_key
                 infos = GEARdict[key]
+                bdoclass = class_check(infos[3])
                 cell_family_list[i].value = infos[0]
                 cell_character_list[i].value = infos[1]
                 cell_lvl_list[i].value = infos[2]
-                cell_class_list[i].value = infos[3]
+                cell_class_list[i].value = bdoclass
                 cell_ap_list[i].value = infos[4]
                 cell_awaap_list[i].value = infos[5]
                 cell_dp_list[i].value = infos[6]
@@ -231,18 +242,17 @@ async def on_message(message):
         if eval:
             i = 0
             for key in GEARdict.fromkeys(GEARdict):
-                user = await client.get_user_info(key)
                 i += 1
             else:
-                await client.send_message(message.channel, "Number of users that submitted their gear: " + i)
+                await client.send_message(message.channel, "Number of users that submitted their gear: " + str(i))
         else:  
             await client.send_message(message.channel,
                                       "You ain't a maid!")
 
     elif message.content.startswith('!help'): 
         embed = discord.Embed()
-        embed.set_author(name="Gear Help",icon_url=message.author.avatar_url)
-        embed.set_thumbnail(url=message.author.avatar_url)
+        embed.set_author(name="Gear Help",icon_url=client.user.avatar_url)
+        embed.set_thumbnail(url=client.user.avatar_url)
         embed.add_field(name="How To Add/Update Gear",value="!gear Family(name) Character(name) Level Class AP AWAAP DP Gear pic",inline=False)
         embed.add_field(name="Classes",value="For Dark Knight use dk",inline=False)
         embed.add_field(name="Gear pic rules",value="Use a direct link to the picture(url must end with .jpg/.png)use ShareX, it's free",inline=False)
