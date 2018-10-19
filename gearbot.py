@@ -10,7 +10,7 @@ client = discord.Client()
 
 GEARdict = defaultdict(list)
 
-bdo_classes = ['warrior', 'valkyrie', 'wizard', 'witch', 'ranger', 'sorceress', 'berserker', 'tamer', 'musa', 'maehwa', 'lahn', 'ninja', 'kunoichi', 'dk', 'striker', 'mystic']
+bdo_classes = ['warrior', 'valkyrie', 'valk', 'wizard', 'wiz', 'witch', 'ranger', 'sorceress', 'sorc', 'berserker', 'tamer', 'musa', 'maehwa', 'lahn', 'ninja', 'kunoichi', 'kuno', 'dk', 'DK', 'striker', 'mystic']
 #missing check on eof and IOE
 def write_gear_list():
     global GEARdict
@@ -18,12 +18,11 @@ def write_gear_list():
         pickle.dump(GEARdict, fp)
 def read_gear_list():
     global GEARdict
-    with open('gearlist', 'rb') as fp:
+    with open('gearlist', 'rb+') as fp:
         GEARdict = pickle.load(fp)
 
-#todo add custom roles or role by id
-async def is_officer(message):
-    if "maids" in [y.name.lower() for y in message.author.roles]: #add your officier role name here
+async def is_officer(message): 
+    if "maids" in [y.name.lower() for y in message.author.roles]: 
         return True
 
     return False
@@ -31,13 +30,12 @@ async def is_officer(message):
 scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
 
-credentials = ServiceAccountCredentials.from_json_keyfile_name('', scope)#add your json auth file name here and in the same folder
+credentials = ServiceAccountCredentials.from_json_keyfile_name('', scope)
 
 gc = gspread.authorize(credentials)
 
-sh = gc.open_by_url(" ") #sheet url here
-wks = sh.worksheet("BOT") #replace with sheet tab name here
-
+sh = gc.open_by_url("") #sheet url here
+wks = sh.worksheet("") #replace with sheet tab name here
 
 #reformat the message removing the bot prefix
 def format_input(prefix,message):
@@ -50,7 +48,7 @@ def get_date(message):
     date = date[0]
     return date
 
-#return the content of the msg
+#return the content of the msg 
 def get_msg_content(message):
     content = message.split(" ", 1)
     content = content[1]
@@ -68,7 +66,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
     if message.content.startswith('!gear'):
-        if message.channel.id == ' ': #change channel id here - bot will only listen ot this channel
+        if message.channel.id == '': #change channel id here
             msg = format_input("!gear", message.content) #cleanup the message
             if message.mentions == []: #if there's no mentions it means you want to add/update gears otherwise pull the mentioned gear out
                 msg_list = msg.split(" ",8) #split the msg in multiple args
@@ -106,8 +104,7 @@ async def on_message(message):
                         await client.send_message(message.channel,
                                                   "Use a direct link to the picture (url must end with.png/.jpg) use ShareX it's free")
                 else:
-                    await client.send_message(message.channel, "Use !gear Family Character Lvl Class AP AWAAP DP Gear Pic link "
-                                                               "(For Dark Knight use dk)")
+                    await client.send_message(message.channel, "Use !help")
             else:
                 if msg:
                     id = message.mentions[0].id
@@ -115,14 +112,25 @@ async def on_message(message):
                         if key == id:
                             userID = await client.get_user_info(key)
                             list = GEARdict[key]
-                            if list[3] == 'dk':
+                            if list[3] == 'DK':
                                 bdoclass = 'Dark Knight'
+                            elif list[3] == 'dk':
+                                bdoclass = 'Dark Knight'
+                            elif list[3] == 'valk':
+                                bdoclass = 'Valkyrie'
+                            elif list[3] == 'wizard':
+                                bdoclass = 'Wizard'
+                            elif list[3] == 'wiz':
+                                bdoclass = 'Wizard' 
+                            elif list[3] == 'sorc':
+                                bdoclass = 'Sorceress'
+                            elif list[3] == 'kuno':
+                                bdoclass = 'Kunoichi' 
                             else:
-                                bdoclass = list[3]
+                                bdoclass = list[3].title()                            
                             picurl = list[7].strip()
                             gs = int(((int(list[4]) + int(list[5])) / 2) + int(list[6]))
-                            stringfix = list[1] + " " + list[0] + "\n" + "**Class: **" + bdoclass + "\n" + " **Lvl:** " + \
-                                        list[2] + "\n" + "**GS:**" + " " + str(gs)
+                            stringfix = list[1] + " " + list[0] + "**\nClass: **" + bdoclass + "**\nLvl: **"+ list[2] + "**\nGS: **" + str(gs)
                             classgs = stringfix.strip()
                             embed = discord.Embed()
                             embed.set_author(name=userID,icon_url=message.mentions[0].avatar_url)
@@ -135,6 +143,7 @@ async def on_message(message):
                        await client.send_message(message.channel,"Gear not found!")
                 else:
                     await client.send_message(message.channel, "Use !gear + @someone!")
+
 
     elif message.content.startswith('!remove'):
         eval = await is_officer(message)
@@ -152,6 +161,7 @@ async def on_message(message):
             await client.send_message(message.channel,
                                       "You ain't a maid!")
 
+
     elif message.content.startswith('!rmid'): #remove gear by discord id
         eval = await is_officer(message)
         if eval:
@@ -168,7 +178,8 @@ async def on_message(message):
             await client.send_message(message.channel,
                                       "You ain't a maid!")
 
-    elif message.content.startswith('!sheet'): #this is very hacky but it works
+
+    elif message.content.startswith('!sheet'):  
         eval = await is_officer(message)
         if eval:
             i = 0
@@ -211,9 +222,10 @@ async def on_message(message):
                 await client.send_message(message.channel, "Gear updated on the sheet!")
             except:
                 await client.send_message(message.channel, "API Error") #most likely issues with the token
-        else:
+        else:  
             await client.send_message(message.channel,
                                       "You ain't a maid!")
+
     elif message.content.startswith('!check'): #self explanatory just counts how many entries we have got so far
         eval = await is_officer(message)
         if eval:
@@ -223,9 +235,17 @@ async def on_message(message):
                 i += 1
             else:
                 await client.send_message(message.channel, "Number of users that submitted their gear: " + i)
-        else:
+        else:  
             await client.send_message(message.channel,
                                       "You ain't a maid!")
 
+    elif message.content.startswith('!help'): 
+        embed = discord.Embed()
+        embed.set_author(name="Gear Help",icon_url=message.author.avatar_url)
+        embed.set_thumbnail(url=message.author.avatar_url)
+        embed.add_field(name="How To Add/Update Gear",value="!gear Family(name) Character(name) Level Class AP AWAAP DP Gear pic",inline=False)
+        embed.add_field(name="Classes",value="For Dark Knight use dk",inline=False)
+        embed.add_field(name="Gear pic rules",value="Use a direct link to the picture(url must end with .jpg/.png)use ShareX, it's free",inline=False)
+        await client.send_message(message.channel,embed=embed)
 
 client.run('')#add your bot token here
