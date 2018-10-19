@@ -241,8 +241,8 @@ async def on_message(message):
 
     elif message.content.startswith('!help'): 
         embed = discord.Embed()
-        embed.set_author(name="Gear Help",icon_url=message.author.avatar_url)
-        embed.set_thumbnail(url=message.author.avatar_url)
+        embed.set_author(name="Gear Help",icon_url=client.user.avatar_url)
+        embed.set_thumbnail(url=client.user.avatar_url)
         embed.add_field(name="How To Add/Update Gear",value="!gear Family(name) Character(name) Level Class AP AWAAP DP Gear pic",inline=False)
         embed.add_field(name="Classes",value="For Dark Knight use dk",inline=False)
         embed.add_field(name="Gear pic rules",value="Use a direct link to the picture(url must end with .jpg/.png)use ShareX, it's free",inline=False)
