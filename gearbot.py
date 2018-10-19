@@ -234,7 +234,7 @@ async def on_message(message):
                 user = await client.get_user_info(key)
                 i += 1
             else:
-                await client.send_message(message.channel, "Number of users that submitted their gear: " + i)
+                await client.send_message(message.channel, "Number of users that submitted their gear: " + str(i))
         else:  
             await client.send_message(message.channel,
                                       "You ain't a maid!")
