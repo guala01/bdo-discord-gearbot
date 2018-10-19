@@ -114,48 +114,20 @@ async def on_message(message):
                             list = GEARdict[key]
                             if list[3] == 'dk':
                                 bdoclass = 'Dark Knight'
-                            if list[3] == 'DK':
+                            elif list[3] == 'DK':
                                 bdoclass = 'Dark Knight'
-                            if list[3] == 'warrior':
-                                bdoclass = 'Warrior'
-                            if list[3] == 'valkyrie':
+                            elif list[3] == 'valk':
                                 bdoclass = 'Valkyrie'
-                            if list[3] == 'valk':
-                                bdoclass = 'Valkyrie'
-                            if list[3] == 'wizard':
+                            elif list[3] == 'wizard':
                                 bdoclass = 'Wizard'
-                            if list[3] == 'wiz':
-                                bdoclass = 'Wizard'
-                            if list[3] == 'witch':
-                                bdoclass = 'Witch'
-                            if list[3] == 'ranger':
-                                bdoclass = 'Ranger'
-                            if list[3] == 'sorceress':
-                                bdoclass = 'Sorceress' 
-                            if list[3] == 'sorc':
+                            elif list[3] == 'wiz':
+                                bdoclass = 'Wizard' 
+                            elif list[3] == 'sorc':
                                 bdoclass = 'Sorceress'
-                            if list[3] == 'berserker':
-                                bdoclass = 'Berserker'
-                            if list[3] == 'tamer':
-                                bdoclass = 'Tamer'
-                            if list[3] == 'musa':
-                                bdoclass = 'Musa'
-                            if list[3] == 'maehwa':
-                                bdoclass = 'Maehwa' 
-                            if list[3] == 'lahn':
-                                bdoclass = 'Lahn'     
-                            if list[3] == 'ninja':
-                                bdoclass = 'Ninja'
-                            if list[3] == 'kunoichi':
-                                bdoclass = 'Kunoichi'
-                            if list[3] == 'kuno':
-                                bdoclass = 'Kunoichi'
-                            if list[3] == 'striker':
-                                bdoclass = 'Striker'
-                            if list[3] == 'mystic':
-                                bdoclass = 'Mystic' 
+                            elif list[3] == 'kuno':
+                                bdoclass = 'Kunoichi' 
                             else:
-                                bdoclass = list[3]                            
+                                bdoclass = list[3].title()                            
                             picurl = list[7].strip()
                             gs = int(((int(list[4]) + int(list[5])) / 2) + int(list[6]))
                             stringfix = list[1] + " " + list[0] + "**\nClass: **" + bdoclass + "**\nLvl: **"+ list[2] + "**\nGS: **" + str(gs)
