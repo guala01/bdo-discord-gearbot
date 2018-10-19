@@ -212,15 +212,15 @@ async def on_message(message):
         if eval:
             i = 0
             gc.login() #refresh auth token
-            cell_name_list = wks.range('B4:B104') #init enough lists to fill the sheet later
-            cell_family_list = wks.range('C4:C104')
-            cell_character_list = wks.range('D4:D104')
-            cell_lvl_list = wks.range('E4:E104')
-            cell_class_list = wks.range('F4:F104')
-            cell_ap_list = wks.range('G4:G104')
-            cell_awaap_list = wks.range('H4:H104')
-            cell_dp_list = wks.range('I4:I104')
-            cell_gearpic_list = wks.range('K4:K104')
+            cell_name_list = wks.range('A1:A100') #init enough lists to fill the sheet later
+            cell_family_list = wks.range('B1:B100')
+            cell_character_list = wks.range('C1:C100')
+            cell_lvl_list = wks.range('D1:C100')
+            cell_class_list = wks.range('E1:E100')
+            cell_ap_list = wks.range('F1:F100')
+            cell_awaap_list = wks.range('G1:G100')
+            cell_dp_list = wks.range('H1:H100')
+            cell_gearpic_list = wks.range('I1:I100')
             for key in GEARdict.fromkeys(GEARdict): #parse tru every key in the map and convert the id to real username then append it to the cell lists
                 user = await client.get_user_info(key)
                 new_key = user.name
