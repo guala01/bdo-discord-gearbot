@@ -115,9 +115,14 @@ async def on_message(message):
                         if key == id:
                             userID = await client.get_user_info(key)
                             list = GEARdict[key]
+                            if list[3] == 'dk':
+                                bdoclass = 'Dark Knight'
+                            else:
+                                bdoclass = list[3]
                             picurl = list[7].strip()
                             gs = int(((int(list[4]) + int(list[5])) / 2) + int(list[6]))
-                            stringfix = list[1] + " "+ list[0] + "\n" + "**Class: **" + list[3] +"\n" + " **Lvl:** "+ list[2] +"\n" + "**GS:**" + " " + str(gs)
+                            stringfix = list[1] + " " + list[0] + "\n" + "**Class: **" + bdoclass + "\n" + " **Lvl:** " + \
+                                        list[2] + "\n" + "**GS:**" + " " + str(gs)
                             classgs = stringfix.strip()
                             embed = discord.Embed()
                             embed.set_author(name=userID,icon_url=message.mentions[0].avatar_url)
