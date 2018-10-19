@@ -104,7 +104,8 @@ async def on_message(message):
                         await client.send_message(message.channel,
                                                   "Use a direct link to the picture (url must end with.png/.jpg) use ShareX it's free")
                 else:
-                    await client.send_message(message.channel, "Use !help")
+                    await client.send_message(message.channel, "Use !gear Family Character Lvl Class AP AWAAP DP Gear Pic link "
+                                                               "(For Dark Knight use dk)")
             else:
                 if msg:
                     id = message.mentions[0].id
