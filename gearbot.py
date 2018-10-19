@@ -10,7 +10,7 @@ client = discord.Client()
 
 GEARdict = defaultdict(list)
 
-bdo_classes = ['warrior', 'valkyrie', 'wizard', 'witch', 'ranger', 'sorceress', 'berserker', 'tamer', 'musa', 'maehwa', 'lahn', 'ninja', 'kunoichi', 'dk', 'striker', 'mystic']
+bdo_classes = ['warrior', 'valkyrie', 'valk', 'wizard', 'wiz', 'witch', 'ranger', 'sorceress', 'sorc', 'berserker', 'tamer', 'musa', 'maehwa', 'lahn', 'ninja', 'kunoichi', 'kuno', 'dk', 'DK', 'striker', 'mystic']
 #missing check on eof and IOE
 def write_gear_list():
     global GEARdict
@@ -21,9 +21,8 @@ def read_gear_list():
     with open('gearlist', 'rb') as fp:
         GEARdict = pickle.load(fp)
 
-#todo add custom roles or role by id
-async def is_officer(message):
-    if "maids" in [y.name.lower() for y in message.author.roles]: #add your officier role name here
+async def is_officer(message): 
+    if "maid" in [y.name.lower() for y in message.author.roles]: 
         return True
 
     return False
@@ -31,13 +30,12 @@ async def is_officer(message):
 scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
 
-credentials = ServiceAccountCredentials.from_json_keyfile_name('', scope)#add your json auth file name here and in the same folder
+credentials = ServiceAccountCredentials.from_json_keyfile_name(' ', scope)
 
 gc = gspread.authorize(credentials)
 
 sh = gc.open_by_url(" ") #sheet url here
 wks = sh.worksheet("BOT") #replace with sheet tab name here
-
 
 #reformat the message removing the bot prefix
 def format_input(prefix,message):
@@ -50,7 +48,7 @@ def get_date(message):
     date = date[0]
     return date
 
-#return the content of the msg
+#return the content of the msg 
 def get_msg_content(message):
     content = message.split(" ", 1)
     content = content[1]
@@ -68,7 +66,7 @@ async def on_ready():
 @client.event
 async def on_message(message):
     if message.content.startswith('!gear'):
-        if message.channel.id == ' ': #change channel id here - bot will only listen ot this channel
+        if message.channel.id == ' ': #change channel id here
             msg = format_input("!gear", message.content) #cleanup the message
             if message.mentions == []: #if there's no mentions it means you want to add/update gears otherwise pull the mentioned gear out
                 msg_list = msg.split(" ",8) #split the msg in multiple args
@@ -106,8 +104,7 @@ async def on_message(message):
                         await client.send_message(message.channel,
                                                   "Use a direct link to the picture (url must end with.png/.jpg) use ShareX it's free")
                 else:
-                    await client.send_message(message.channel, "Use !gear Family Character Lvl Class AP AWAAP DP Gear Pic link "
-                                                               "(For Dark Knight use dk)")
+                    await client.send_message(message.channel, "Use !help")
             else:
                 if msg:
                     id = message.mentions[0].id
@@ -115,9 +112,53 @@ async def on_message(message):
                         if key == id:
                             userID = await client.get_user_info(key)
                             list = GEARdict[key]
+                            if list[3] == 'dk':
+                                bdoclass = 'Dark Knight'
+                            if list[3] == 'DK':
+                                bdoclass = 'Dark Knight'
+                            if list[3] == 'warrior':
+                                bdoclass = 'Warrior'
+                            if list[3] == 'valkyrie':
+                                bdoclass = 'Valkyrie'
+                            if list[3] == 'valk':
+                                bdoclass = 'Valkyrie'
+                            if list[3] == 'wizard':
+                                bdoclass = 'Wizard'
+                            if list[3] == 'wiz':
+                                bdoclass = 'Wizard'
+                            if list[3] == 'witch':
+                                bdoclass = 'Witch'
+                            if list[3] == 'ranger':
+                                bdoclass = 'Ranger'
+                            if list[3] == 'sorceress':
+                                bdoclass = 'Sorceress' 
+                            if list[3] == 'sorc':
+                                bdoclass = 'Sorceress'
+                            if list[3] == 'berserker':
+                                bdoclass = 'Berserker'
+                            if list[3] == 'tamer':
+                                bdoclass = 'Tamer'
+                            if list[3] == 'musa':
+                                bdoclass = 'Musa'
+                            if list[3] == 'maehwa':
+                                bdoclass = 'Maehwa' 
+                            if list[3] == 'lahn':
+                                bdoclass = 'Lahn'     
+                            if list[3] == 'ninja':
+                                bdoclass = 'Ninja'
+                            if list[3] == 'kunoichi':
+                                bdoclass = 'Kunoichi'
+                            if list[3] == 'kuno':
+                                bdoclass = 'Kunoichi'
+                            if list[3] == 'striker':
+                                bdoclass = 'Striker'
+                            if list[3] == 'mystic':
+                                bdoclass = 'Mystic' 
+                            else:
+                                bdoclass = list[3]                            
                             picurl = list[7].strip()
                             gs = int(((int(list[4]) + int(list[5])) / 2) + int(list[6]))
-                            stringfix = list[1] + " " + list[0] + "\n" + "**Class: **" + list[3] +"\n" + "**Lvl: **"+ list[2] +"\n" + "**GS: **" + str(gs)
+                            stringfix = list[1] + " " + list[0] + "**\nClass: **" + bdoclass + "**\nLvl: **"+ list[2] + "**\nGS: **" + str(gs)
                             classgs = stringfix.strip()
                             embed = discord.Embed()
                             embed.set_author(name=userID,icon_url=message.mentions[0].avatar_url)
@@ -130,6 +171,7 @@ async def on_message(message):
                        await client.send_message(message.channel,"Gear not found!")
                 else:
                     await client.send_message(message.channel, "Use !gear + @someone!")
+
 
     elif message.content.startswith('!remove'):
         eval = await is_officer(message)
@@ -147,6 +189,7 @@ async def on_message(message):
             await client.send_message(message.channel,
                                       "You ain't a maid!")
 
+
     elif message.content.startswith('!rmid'): #remove gear by discord id
         eval = await is_officer(message)
         if eval:
@@ -163,20 +206,21 @@ async def on_message(message):
             await client.send_message(message.channel,
                                       "You ain't a maid!")
 
-    elif message.content.startswith('!sheet'): #this is very hacky but it works
+
+    elif message.content.startswith('!sheet'): #this is very hacky but it works 
         eval = await is_officer(message)
         if eval:
             i = 0
             gc.login() #refresh auth token
-            cell_name_list = wks.range('A1:A100') #init enough lists to fill the sheet later
-            cell_family_list = wks.range('B1:B100')
-            cell_character_list = wks.range('C1:C100')
-            cell_lvl_list = wks.range('D1:C100')
-            cell_class_list = wks.range('E1:E100')
-            cell_ap_list = wks.range('F1:F100')
-            cell_awaap_list = wks.range('G1:G100')
-            cell_dp_list = wks.range('H1:H100')
-            cell_gearpic_list = wks.range('I1:I100')
+            cell_name_list = wks.range('B4:B104') #init enough lists to fill the sheet later
+            cell_family_list = wks.range('C4:C104')
+            cell_character_list = wks.range('D4:D104')
+            cell_lvl_list = wks.range('E4:E104')
+            cell_class_list = wks.range('F4:F104')
+            cell_ap_list = wks.range('G4:G104')
+            cell_awaap_list = wks.range('H4:H104')
+            cell_dp_list = wks.range('I4:I104')
+            cell_gearpic_list = wks.range('K4:K104')
             for key in GEARdict.fromkeys(GEARdict): #parse tru every key in the map and convert the id to real username then append it to the cell lists
                 user = await client.get_user_info(key)
                 new_key = user.name
@@ -206,9 +250,10 @@ async def on_message(message):
                 await client.send_message(message.channel, "Gear updated on the sheet!")
             except:
                 await client.send_message(message.channel, "API Error") #most likely issues with the token
-        else:
+        else:  
             await client.send_message(message.channel,
                                       "You ain't a maid!")
+
     elif message.content.startswith('!check'): #self explanatory just counts how many entries we have got so far
         eval = await is_officer(message)
         if eval:
@@ -218,7 +263,7 @@ async def on_message(message):
                 i += 1
             else:
                 await client.send_message(message.channel, "Number of users that submitted their gear: " + i)
-        else:
+        else:  
             await client.send_message(message.channel,
                                       "You ain't a maid!")
 
