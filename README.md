@@ -2,7 +2,8 @@
 Very simple bot that will handle your guild gear and update it on a google spreasheet file to keep track of guild avg gs.
 Bot will work with !gear command and has remove and sheet update features to keep track of everything. It's not the cleanest code but does it's job and embeds are nice.
 
-To run it you have to obtain google api auth file + unlock sheet and drive api. pip install discord, gspread, oauth2client, PyOpenSSL and validators (check gspread docs to install those 3) and don't forget to give sheet access to your mail in json api file.
+To run it you have to obtain google api auth file + unlock sheet and drive api(check gspread docs for better infos). 
+pip install discord, gspread, oauth2client, PyOpenSSL(those 3 are for spreadsheet access) and validators and don't forget to give sheet access to your mail in json api file(check gpsread doc for more info).
 
 Bot has:
 
