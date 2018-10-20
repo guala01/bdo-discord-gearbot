@@ -4,7 +4,9 @@ Bot will work with !gear command and has remove and sheet update features to kee
 
 To run it you have to obtain google api auth file + unlock sheet and drive api. pip install discord, gspread, oauth2client, PyOpenSSL and validators (check gspread docs to install those 3) and don't forget to give sheet access to your mail in json api file.
 
-Bot has !gear + parameters (family name, char name, class, level, ap, awaap, dp, gear pict link) to submit your gear
+Bot has:
+
+!gear + parameters (family name, char name, class, level, ap, awaap, dp, gear pict link) to submit your gear
 
 !gear + @mention to see someone else gear
 
