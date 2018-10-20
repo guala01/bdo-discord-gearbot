@@ -69,8 +69,6 @@ def class_check(class_name):
         bdoclass = 'Dark Knight'
     elif class_name == 'valk':
         bdoclass = 'Valkyrie'
-    elif class_name == 'wizard':
-        bdoclass = 'Wizard'
     elif class_name == 'wiz':
         bdoclass = 'Wizard' 
     elif class_name == 'sorc':
@@ -87,7 +85,7 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-    read_gear_list() #this will fail if gearlist file is empty or not there at all
+    read_gear_list() 
 
 
 @client.event
