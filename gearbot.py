@@ -3,12 +3,35 @@ import json
 import discord
 from collections import defaultdict
 import gspread
+import asyncio
 from oauth2client.service_account import ServiceAccountCredentials
 import validators
 
 client = discord.Client()
 
 GEARdict = defaultdict(list)
+
+scope = ['https://spreadsheets.google.com/feeds',
+         'https://www.googleapis.com/auth/drive']
+
+credentials = ServiceAccountCredentials.from_json_keyfile_name('', scope)#add json credentials file name
+
+gc = gspread.authorize(credentials)
+
+
+sh = gc.open_by_url("") #sheet url here
+wks = sh.worksheet("Sheet1") #replace with sheet tab name here
+
+
+cell_name_list = wks.range('A2:A100') #init enough lists to fill the sheet later
+cell_family_list = wks.range('B2:B100')
+cell_character_list = wks.range('C2:C100')
+cell_lvl_list = wks.range('D2:D100')
+cell_class_list = wks.range('E2:E100')
+cell_ap_list = wks.range('F2:F100')
+cell_awaap_list = wks.range('G2:G100')
+cell_dp_list = wks.range('H2:H100')
+cell_gearpic_list = wks.range('I2:I100')
 
 bdo_classes = ['warrior', 'valkyrie', 'valk', 'wizard', 'wiz', 'witch', 'ranger', 'sorceress', 'sorc', 'berserker', 'tamer', 'musa', 'maehwa', 'lahn', 'ninja', 'kunoichi', 'kuno', 'dk', 'DK', 'striker', 'mystic']
 #missing check on eof and IOE
@@ -34,17 +57,6 @@ async def is_officer(message):
 
     return False
 
-scope = ['https://spreadsheets.google.com/feeds',
-         'https://www.googleapis.com/auth/drive']
-
-credentials = ServiceAccountCredentials.from_json_keyfile_name('', scope)
-
-gc = gspread.authorize(credentials)
-
-
-sh = gc.open_by_url("") #sheet url here
-wks = sh.worksheet("") #replace with sheet tab name here
-
 #reformat the message removing the bot prefix
 def format_input(prefix,message):
     string = message.replace(prefix,'')
@@ -69,6 +81,8 @@ def class_check(class_name):
         bdoclass = 'Dark Knight'
     elif class_name == 'valk':
         bdoclass = 'Valkyrie'
+    elif class_name == 'wizard':
+        bdoclass = 'Wizard'
     elif class_name == 'wiz':
         bdoclass = 'Wizard' 
     elif class_name == 'sorc':
@@ -79,19 +93,73 @@ def class_check(class_name):
         bdoclass = class_name.title()
     return bdoclass
 
+def delete_from_sheet(name):
+    gc.login()
+    try:
+        cell = wks.find(name)
+        wks.delete_row(cell.row)
+        print("deleted")
+    except:
+        print("not found on sheet, wrong fam name ?")
+
+def next_available_row(worksheet):
+    str_list = list(filter(None, worksheet.col_values(1)))
+    return str(len(str_list)+1)
+
+def find_and_update(message):
+    gc.login()
+    infos = GEARdict[message.author.id]
+    name = message.author.display_name
+    try:
+        cell = wks.find(infos[0]) #find fam name in sheet
+        print("user found in sheet")
+        try: #write the lists to the sheet
+            wks.update_cell(cell.row,cell.col-1,name)
+            wks.update_cell(cell.row,cell.col,infos[0])
+            wks.update_cell(cell.row,cell.col+1,infos[1])
+            wks.update_cell(cell.row,cell.col+2,infos[2])
+            wks.update_cell(cell.row,cell.col+3,infos[3])
+            wks.update_cell(cell.row,cell.col+4,infos[4])
+            wks.update_cell(cell.row,cell.col+5,infos[5])
+            wks.update_cell(cell.row,cell.col+6,infos[6])
+            wks.update_cell(cell.row,cell.col+7,infos[7])
+        except:
+            print("failed to update sheet")
+    except:
+        next_row = next_available_row(wks)
+        try: #write the lists to the sheet
+            wks.update_cell(next_row,1,name)
+            wks.update_cell(next_row,2,infos[0])
+            wks.update_cell(next_row,3,infos[1])
+            wks.update_cell(next_row,4,infos[2])
+            wks.update_cell(next_row,5,infos[3])
+            wks.update_cell(next_row,6,infos[4])
+            wks.update_cell(next_row,7,infos[5])
+            wks.update_cell(next_row,8,infos[6])
+            wks.update_cell(next_row,9,infos[7])
+        except:
+            print("add new user to sheet fail")
+
+
+async def send_timed_msg(message,embed,timer):
+    await client.wait_until_ready()
+    msg = await client.send_message(message.channel,embed=embed )
+    await asyncio.sleep(timer) 
+    await client.delete_message(msg)
+
+
 @client.event
 async def on_ready():
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)
     print('------')
-    read_gear_list() 
-
+    read_gear_list()
 
 @client.event
 async def on_message(message):
     if message.content.startswith('!gear'):
-        if message.channel.id == '465920848738385920': #change channel id here
+        if message.channel.id == '': #change channel id here
             msg = format_input("!gear", message.content) #cleanup the message
             if message.mentions == []: #if there's no mentions it means you want to add/update gears otherwise pull the mentioned gear out
                 msg_list = msg.split(" ",8) #split the msg in multiple args
@@ -110,6 +178,7 @@ async def on_message(message):
                                 GEARdict[message.author.id].append(msg_list[5]) #awaap
                                 GEARdict[message.author.id].append(msg_list[6]) #dp
                                 GEARdict[message.author.id].append(msg_list[7]) #pic
+                                find_and_update(message)
                                 write_gear_list()
                                 await client.send_message(message.channel,
                                                       "Your gear has been updated!")
@@ -122,6 +191,7 @@ async def on_message(message):
                                 GEARdict[message.author.id].append(msg_list[5])
                                 GEARdict[message.author.id].append(msg_list[6])
                                 GEARdict[message.author.id].append(msg_list[7])
+                                find_and_update(message)
                                 write_gear_list()
                                 await client.send_message(message.channel,
                                                   "Your gear has been added ")
@@ -147,6 +217,7 @@ async def on_message(message):
                             embed.set_thumbnail(url=message.mentions[0].avatar_url)
                             embed.add_field(name=message.mentions[0].display_name,value=classgs,inline=False)
                             embed.set_image(url=picurl)
+                            #await send_timed_msg(message,embed,15) #timed message example
                             await client.send_message(message.channel,embed=embed)
                             break
                     else:
@@ -157,50 +228,42 @@ async def on_message(message):
     elif message.content.startswith('!remove'):
         eval = await is_officer(message)
         if eval:
-            id = message.mentions[0].id
-            for key in GEARdict:
-                if key == id:
-                    del GEARdict[key]
-                    write_gear_list()
-                    await client.send_message(message.channel, "Gear has been removed")
-                    break
-            else:
-                await client.send_message(message.channel, "Gear not found!")
+            if not message.mentions:
+                id = format_input("!remove", message.content)
+                for key in GEARdict:
+                    if key == id:
+                        list = GEARdict[key]
+                        name = list[0]
+                        delete_from_sheet(name)
+                        del GEARdict[key]
+                        write_gear_list()
+                        await client.send_message(message.channel, "Gear has been removed")
+                        break
+                else:
+                    await client.send_message(message.channel, "Gear not found!")
+            else:    
+                id = message.mentions[0].id
+                for key in GEARdict:
+                    if key == id:
+                        list = GEARdict[key]
+                        name = list[0]
+                        delete_from_sheet(name)
+                        del GEARdict[key]
+                        write_gear_list()
+                        await client.send_message(message.channel, "Gear has been removed")
+                        break
+                else:
+                    await client.send_message(message.channel, "Gear not found!")
         else:
             await client.send_message(message.channel,
                                       "You ain't a maid!")
 
-
-    elif message.content.startswith('!rmid'): #remove gear by discord id
-        eval = await is_officer(message)
-        if eval:
-            id = format_input("!rmid", message.content)
-            for key in GEARdict:
-                if key == id:
-                    del GEARdict[key]
-                    write_gear_list()
-                    await client.send_message(message.channel, "Gear has been removed")
-                    break
-            else:
-                await client.send_message(message.channel, "Gear not found!")
-        else:
-            await client.send_message(message.channel,
-                                      "You ain't a maid!")
 
     elif message.content.startswith('!sheet'):  
         eval = await is_officer(message)
         if eval:
             i = 0
             gc.login() #refresh auth token
-            cell_name_list = wks.range('A1:A100') #init enough lists to fill the sheet later
-            cell_family_list = wks.range('B1:B100')
-            cell_character_list = wks.range('C1:C100')
-            cell_lvl_list = wks.range('D1:D100')
-            cell_class_list = wks.range('E1:E100')
-            cell_ap_list = wks.range('F1:F100')
-            cell_awaap_list = wks.range('G1:G100')
-            cell_dp_list = wks.range('H1:H100')
-            cell_gearpic_list = wks.range('I1:I100')
             for key in GEARdict.fromkeys(GEARdict): #parse tru every key in the map and convert the id to real username then append it to the cell lists
                 user = await client.get_user_info(key)
                 new_key = user.name
