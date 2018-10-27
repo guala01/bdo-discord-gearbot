@@ -1,5 +1,5 @@
 # bdo-discord-gearbot
-Very simple bot that will handle your guild gear and update it on a google spreasheet file to keep track of guild avg gs.
+Very simple bot that will handle your guild gear and keep it updated on a google spreasheet file to keep track of guild members.
 Bot will work with !gear command and has remove and sheet update features to keep track of everything. It's not the cleanest code but does it's job and embeds are nice.
 
 To run it you have to obtain google api auth file + unlock sheet and drive api(check gspread docs for better infos). 
@@ -11,11 +11,9 @@ Bot has:
 
 !gear + @mention to see someone else gear
 
-!sheet to export/update the gear on your google spreadsheet
+!sheet to export/update the gear on a new google spreadsheet (bot automatically updates the gear on the sheet for you, so this command is to use only if you want a full update for any reason or to update a new sheet)
 
-!remove + @mention to remove submissions
-
-!rmid + discordID to remove gear of someone that left the guild
+!remove + @mention or Discord ID
 
 !help to show commands/indications
 
