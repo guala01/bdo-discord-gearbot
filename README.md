@@ -11,6 +11,10 @@ Bot has:
 
 !gear + @mention to see someone else gear
 
+!update stats + ap + dp + new link to update gear instead of using !gear full 
+
+!update level + level to update your level
+
 !sheet to export/update the gear on a new google spreadsheet (bot automatically updates the gear on the sheet for you, so this command is to use only if you want a full update for any reason or to update a new sheet)
 
 !remove + @mention or Discord ID
