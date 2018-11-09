@@ -11,10 +11,11 @@ client = discord.Client()
 
 GEARdict = defaultdict(list)
 
+
 scope = ['https://spreadsheets.google.com/feeds',
          'https://www.googleapis.com/auth/drive']
 
-credentials = ServiceAccountCredentials.from_json_keyfile_name('', scope)#add json credentials file name
+credentials = ServiceAccountCredentials.from_json_keyfile_name('.json', scope)
 
 gc = gspread.authorize(credentials)
 
@@ -33,7 +34,7 @@ cell_awaap_list = wks.range('G2:G100')
 cell_dp_list = wks.range('H2:H100')
 cell_gearpic_list = wks.range('I2:I100')
 
-bdo_classes = ['warrior', 'valkyrie', 'valk', 'wizard', 'wiz', 'witch', 'ranger', 'sorceress', 'sorc', 'berserker', 'tamer', 'musa', 'maehwa', 'lahn', 'ninja', 'kunoichi', 'kuno', 'dk', 'DK', 'striker', 'mystic']
+bdo_classes = ['warrior', 'valkyrie', 'valk', 'wizard', 'wiz', 'witch', 'ranger', 'sorceress', 'sorc', 'berserker', 'tamer', 'musa', 'maehwa', 'lahn', 'ninja', 'kunoichi', 'kuno', 'dk', 'DK', 'striker','stroker', 'mystic']
 #missing check on eof and IOE
 def write_gear_list():
     global GEARdict
@@ -53,6 +54,12 @@ def read_gear_list():
 
 async def is_officer(message): 
     if "maids" in [y.name.lower() for y in message.author.roles]: 
+        return True
+
+    return False
+
+async def is_member(member): 
+    if "members" in [y.name.lower() for y in member.roles]: 
         return True
 
     return False
@@ -89,6 +96,8 @@ def class_check(class_name):
         bdoclass = 'Sorceress'
     elif class_name == 'kuno':
         bdoclass = 'Kunoichi' 
+    elif class_name == 'stroker':
+        bdoclass = 'Striker'
     else:
         bdoclass = class_name.title()
     return bdoclass
@@ -106,7 +115,7 @@ def next_available_row(worksheet):
     str_list = list(filter(None, worksheet.col_values(1)))
     return str(len(str_list)+1)
 
-def find_and_update(message):
+async def find_and_update(message):
     gc.login()
     infos = GEARdict[message.author.id]
     name = message.author.display_name
@@ -133,6 +142,7 @@ def find_and_update(message):
             return
     except:
         next_row = next_available_row(wks)
+        print("add new user")
         try: #write the lists to the sheet
             wks.update_cell(next_row,1,name)
             wks.update_cell(next_row,2,infos[0])
@@ -144,15 +154,13 @@ def find_and_update(message):
             wks.update_cell(next_row,8,infos[6])
             wks.update_cell(next_row,9,infos[7])
         except:
-            print("add new user to sheet fail")
-
-
+            await client.send_message(message.channel,"Sheet broke even more send help pls")
+    
 async def send_timed_msg(message,embed,timer):
     await client.wait_until_ready()
     msg = await client.send_message(message.channel,embed=embed )
     await asyncio.sleep(timer) 
     await client.delete_message(msg)
-
 
 @client.event
 async def on_ready():
@@ -160,12 +168,13 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-    read_gear_list()
+    read_gear_list() #this will fail if gearlist file is empty or not there at all
+
 
 @client.event
 async def on_message(message):
     if message.content.startswith('!gear'):
-        if message.channel.id == '': #change channel id here
+        if message.channel.id == '504391297100939287': #change channel id here
             msg = format_input("!gear", message.content) #cleanup the message
             if message.mentions == []: #if there's no mentions it means you want to add/update gears otherwise pull the mentioned gear out
                 msg_list = msg.split(" ",8) #split the msg in multiple args
@@ -184,7 +193,7 @@ async def on_message(message):
                                 GEARdict[message.author.id].append(msg_list[5]) #awaap
                                 GEARdict[message.author.id].append(msg_list[6]) #dp
                                 GEARdict[message.author.id].append(msg_list[7]) #pic
-                                find_and_update(message)
+                                await find_and_update(message)
                                 write_gear_list()
                                 await client.send_message(message.channel,
                                                       "Your gear has been updated!")
@@ -197,7 +206,7 @@ async def on_message(message):
                                 GEARdict[message.author.id].append(msg_list[5])
                                 GEARdict[message.author.id].append(msg_list[6])
                                 GEARdict[message.author.id].append(msg_list[7])
-                                find_and_update(message)
+                                await find_and_update(message)
                                 write_gear_list()
                                 await client.send_message(message.channel,
                                                   "Your gear has been added ")
@@ -263,7 +272,7 @@ async def on_message(message):
         else:
             await client.send_message(message.channel,
                                       "You ain't a maid!")
-                  
+
     elif message.content.startswith('!update'):
         if message.channel.id == '504391297100939287':
             msg = format_input("!update", message.content)
@@ -310,7 +319,7 @@ async def on_message(message):
                                                     "Use !help")
             else:
                        await client.send_message(message.channel,"Gear not found!")
-                  
+
     elif message.content.startswith('!sheet'):  
         eval = await is_officer(message)
         if eval:
@@ -368,7 +377,25 @@ async def on_message(message):
         embed.set_thumbnail(url=client.user.avatar_url)
         embed.add_field(name="How To Add/Update Gear",value="!gear Family(name) Character(name) Level Class AP AWAAP DP Gear pic",inline=False)
         embed.add_field(name="Classes",value="For Dark Knight use dk",inline=False)
+        embed.add_field(name="Gear update",value="Use !update stats + ap + dp + gear link",inline=False)
+        embed.add_field(name="Level update",value="Use !update level + new level",inline=False)
         embed.add_field(name="Gear pic rules",value="Use a direct link to the picture(url must end with .jpg/.png)use ShareX, it's free",inline=False)
         await client.send_message(message.channel,embed=embed)
+    
+
+    elif message.content.startswith('!slackers'):
+        eval = await is_officer(message)
+        if eval:
+            m_list = message.server.members
+            await client.send_message(message.channel,"List of slackers!")
+            for members in m_list:
+                check = await is_member(members)
+                if check:
+                    if members.id not in GEARdict.keys():
+                        await client.send_message(message.channel,"" + members.mention)
+        else:
+            await client.send_message(message.channel,
+                                      "You ain't a maid!")
 
 client.run('')#add your bot token here
+
