@@ -270,43 +270,46 @@ async def on_message(message):
             msg_list = msg.split(" ",1)
             msg_list[0] = msg_list[0].lower()
             print("msg_list: ",msg_list)
-            if msg_list[0] == 'stats':
-                stats_list = msg_list[1].split(" ",4)
-                print("stats_list: ",stats_list)
-                if (len(stats_list) == 4 and stats_list[0].isnumeric() and 
-                    stats_list[1].isnumeric() and stats_list[2].isnumeric() and validators.url(stats_list[3])):
-                    if(stats_list[3].endswith(".png") or stats_list[3].endswith(".jpg") ):
-                        GEARdict[message.author.id].pop(4)
-                        GEARdict[message.author.id].insert(4,stats_list[0]) #ap
-                        GEARdict[message.author.id].pop(5)
-                        GEARdict[message.author.id].insert(5,stats_list[1]) #awaap
-                        GEARdict[message.author.id].pop(6)
-                        GEARdict[message.author.id].insert(6,stats_list[2]) #dp
-                        GEARdict[message.author.id].pop(7)
-                        GEARdict[message.author.id].insert(7,stats_list[3]) #link
+            if message.author.id in GEARdict.keys():
+                if msg_list[0] == 'stats':
+                    stats_list = msg_list[1].split(" ",4)
+                    print("stats_list: ",stats_list)
+                    if (len(stats_list) == 4 and stats_list[0].isnumeric() and 
+                        stats_list[1].isnumeric() and stats_list[2].isnumeric() and validators.url(stats_list[3])):
+                        if(stats_list[3].endswith(".png") or stats_list[3].endswith(".jpg") ):
+                            GEARdict[message.author.id].pop(4)
+                            GEARdict[message.author.id].insert(4,stats_list[0]) #ap
+                            GEARdict[message.author.id].pop(5)
+                            GEARdict[message.author.id].insert(5,stats_list[1]) #awaap
+                            GEARdict[message.author.id].pop(6)
+                            GEARdict[message.author.id].insert(6,stats_list[2]) #dp
+                            GEARdict[message.author.id].pop(7)
+                            GEARdict[message.author.id].insert(7,stats_list[3]) #link
+                            await find_and_update(message)
+                            write_gear_list()
+                            await client.send_message(message.channel,
+                                                        "Your gear has been updated!")
+                        else:
+                            await client.send_message(message.channel,
+                                                    "Use a direct link to the picture (url must end with.png/.jpg) use ShareX it's free")
+                    else:
+                        await client.send_message(message.channel,
+                                                        "Use !help")
+                elif msg_list[0] == 'level':
+                    level_list = msg_list[1].split(" ",2)
+                    print("level: ",level_list)
+                    if(level_list[0].isnumeric()):
+                        GEARdict[message.author.id].pop(2)
+                        GEARdict[message.author.id].insert(2,level_list[0])
                         await find_and_update(message)
                         write_gear_list()
                         await client.send_message(message.channel,
-                                                    "Your gear has been updated!")
-                    else:
-                        await client.send_message(message.channel,
-                                                  "Use a direct link to the picture (url must end with.png/.jpg) use ShareX it's free")
+                                                    "Your level has been updated!")  
                 else:
                     await client.send_message(message.channel,
                                                     "Use !help")
-            elif msg_list[0] == 'level':
-                level_list = msg_list[1].split(" ",2)
-                print("level: ",level_list)
-                if(level_list[0].isnumeric()):
-                    GEARdict[message.author.id].pop(2)
-                    GEARdict[message.author.id].insert(2,level_list[0])
-                    await find_and_update(message)
-                    write_gear_list()
-                    await client.send_message(message.channel,
-                                                "Your level has been updated!")  
             else:
-                await client.send_message(message.channel,
-                                                "Use !help")
+                       await client.send_message(message.channel,"Gear not found!")
                   
     elif message.content.startswith('!sheet'):  
         eval = await is_officer(message)
