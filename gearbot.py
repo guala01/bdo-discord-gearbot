@@ -110,21 +110,27 @@ def find_and_update(message):
     gc.login()
     infos = GEARdict[message.author.id]
     name = message.author.display_name
+    bdoclass = class_check(infos[3])
     try:
-        cell = wks.find(infos[0]) #find fam name in sheet
+        cell = wks.find(infos[0]) #find fam name in sheet which is at col 2
+        column = cell.col
+        if (column == 1): #fam name same as discord name ?
+            column = column+1
+            print("same discord name as fam name")
         print("user found in sheet")
         try: #write the lists to the sheet
-            wks.update_cell(cell.row,cell.col-1,name)
-            wks.update_cell(cell.row,cell.col,infos[0])
-            wks.update_cell(cell.row,cell.col+1,infos[1])
-            wks.update_cell(cell.row,cell.col+2,infos[2])
-            wks.update_cell(cell.row,cell.col+3,infos[3])
-            wks.update_cell(cell.row,cell.col+4,infos[4])
-            wks.update_cell(cell.row,cell.col+5,infos[5])
-            wks.update_cell(cell.row,cell.col+6,infos[6])
-            wks.update_cell(cell.row,cell.col+7,infos[7])
+            wks.update_cell(cell.row,column-1,name)
+            wks.update_cell(cell.row,column,infos[0])
+            wks.update_cell(cell.row,column+1,infos[1])
+            wks.update_cell(cell.row,column+2,infos[2])
+            wks.update_cell(cell.row,column+3,bdoclass)
+            wks.update_cell(cell.row,column+4,infos[4])
+            wks.update_cell(cell.row,column+5,infos[5])
+            wks.update_cell(cell.row,column+6,infos[6])
+            wks.update_cell(cell.row,column+7,infos[7])
         except:
-            print("failed to update sheet")
+            await client.send_message(message.channel,"Sheet broke send help pls")
+            return
     except:
         next_row = next_available_row(wks)
         try: #write the lists to the sheet
@@ -132,7 +138,7 @@ def find_and_update(message):
             wks.update_cell(next_row,2,infos[0])
             wks.update_cell(next_row,3,infos[1])
             wks.update_cell(next_row,4,infos[2])
-            wks.update_cell(next_row,5,infos[3])
+            wks.update_cell(next_row,5,bdoclass)
             wks.update_cell(next_row,6,infos[4])
             wks.update_cell(next_row,7,infos[5])
             wks.update_cell(next_row,8,infos[6])
