@@ -15,6 +15,14 @@ import gspread
 import asyncio
 from oauth2client.service_account import ServiceAccountCredentials
 import validators
+import datetime
+import calendar
+
+warid = 0
+wid = ''
+cdate = ''
+
+WARDict = defaultdict(list)
 
 client = discord.Client()
 
@@ -30,6 +38,8 @@ gc = gspread.authorize(credentials)
 sh = gc.open_by_url("") #sheet url here
 wks = sh.worksheet("Sheet2") #replace with sheet tab name here
 
+war = sh.worksheet("Nodewar") #nodewar tab
+
 cell_name_list = wks.range('A2:A100') #init enough lists to fill the sheet later
 cell_family_list = wks.range('B2:B100')
 cell_character_list = wks.range('C2:C100')
@@ -42,6 +52,21 @@ cell_gearpic_list = wks.range('I2:I100')
 
 bdo_classes = ['warrior', 'valkyrie', 'valk', 'wizard', 'wiz', 'witch', 'ranger', 'sorceress', 'sorc', 'berserker', 'tamer', 'musa', 'maehwa', 'lahn', 'ninja', 'kunoichi', 'kuno', 'dk', 'DK', 'striker','stroker', 'mystic']
 #missing check on eof and IOE
+def write_war_list():
+    global WARDict
+    with open('warlist.json','w') as fp:
+        json.dump(WARDict,fp)
+def read_war_list():
+    global WARDict
+    try:
+        with open('warlist.json','r') as fp:
+            WARDict = json.load(fp)
+    except IOError:
+        fp = open('warlist.json','w+')
+        WARDict = defaultdict(list)
+    except EOFError: #file empty
+        WARDict = defaultdict(list)
+
 def write_gear_list():
     global GEARdict
     with open('gearlist', 'wb') as fp:
@@ -85,6 +110,23 @@ def get_msg_content(message):
     content = message.split(" ", 1)
     content = content[1]
     return content
+
+def check_day(msg):
+    if not isinstance(msg,str):
+        try:
+            datetime.datetime.strptime(msg.content, '%d-%m-%Y')
+            return True
+        except ValueError:
+            return False
+    else:
+        try:
+            print(msg)
+            datetime.datetime.strptime(msg, '%d-%m-%Y')
+            print("valid date")
+            return True
+        except ValueError:
+            print("invalid date")
+            return False
 
 async def msg_validation(msg_list,message,offset):
     if(len(msg_list) == 8+offset and msg_list[2+offset].isnumeric() and msg_list[3+offset].lower() in bdo_classes and
@@ -145,9 +187,48 @@ def delete_from_sheet(name):
     except:
         print("not found on sheet, wrong fam name ?")
 
+def delete_war(name):
+    gc.login()
+    try:
+        print(name)
+        cell = war.find(name)
+        str_list = list(filter(None, war.col_values(cell.col)))
+        for i in range(len(str_list)):
+            war.update_cell(i+1,cell.col,"")
+        print("deleted")
+    except:
+        print("something went wrong or not found")
+
 def next_available_row(worksheet):
     str_list = list(filter(None, worksheet.col_values(1)))
     return str(len(str_list)+1)
+
+def next_available_col(worksheet):
+    str_list = list(filter(None, worksheet.row_values(1)))
+    return str(len(str_list)+1)
+
+async def update_war_sheet(message,date):
+    gc.login()
+    infos = WARDict[date]
+    #user = await client.get_user_info(id)
+    try:
+        cell = war.find(date)
+        column = cell.col
+        try:
+            for i in range(1,len(infos)+1):
+                war.update_cell(i+1,column,infos[i-1])
+        except:
+            await client.send_message(message.channel,"Error on war.update_cell")
+    except:
+        print("New war added")
+        next_col = next_available_col(war)
+        war.update_cell(1,next_col,date)
+        try: #write the lists to the sheet
+            for i in range(1,len(infos)+1):
+                war.update_cell(i+1,next_col,infos[i-1])
+                
+        except:
+            await client.send_message(message.channel,"Error on war.update_cell for new war")
 
 async def find_and_update(message,user):
     gc.login()
@@ -214,9 +295,18 @@ async def on_ready():
     print(client.user.id)
     print('------')
     read_gear_list() #this will fail if gearlist file is empty or not there at all
+    read_war_list()
+    #del WARDict['30-11-2018']
+    #del WARDict['28-11-2018']
+    #del WARDict['27-11-2018']
+    #del WARDict['26-11-2018']
+    #del WARDict['25-11-2018']
+    #del WARDict['24-11-2018']
+    print(WARDict)
 
 @client.event
 async def on_message(message):
+    #print(WARDict)
     if message.content.startswith('!gear'):
         if message.channel.id == '465920848738385920': #change channel id here
             msg = format_input("!gear", message.content) #cleanup the message
@@ -461,10 +551,131 @@ async def on_message(message):
                             await client.send_message(message.channel,
                                                 "Added a new slave to the pack")
                     else:
-                        print("message validation failed")
+                        await client.send_message(message.channel,"message validation failed")
                 else:
-                    print("mention not found")
+                    await client.send_message(message.channel,"mention not found")
             else:
-                print("empty msg")
-                
+                await client.send_message(message.channel,"no args to msg.content")
+
+    elif message.content.startswith('!war'):
+        global warid
+        global cdate
+        #WARDict.setdefault('culo',[]).append('culo2')
+        if message.channel.id == '465920848738385920' and await is_officer(message):
+            nwchannel = message.author.server.get_channel("465920848738385920")
+            channel = message.author.server.get_channel("465920848738385920")
+            await client.send_message(message.channel,"Insert the date of the nodewar in the day-month-year format")
+            date = await client.wait_for_message(author=message.author,channel=channel,check=check_day,timeout=60)
+            if date is None:
+                await client.send_message(message.channel, "Nodewar announcement exited successfully")
+                return
+            await client.send_message(message.channel, "Now insert the place of the nw")
+            place = await client.wait_for_message(author=message.author,channel=channel,timeout=60)
+            if place is None or place.content == '$exit':
+                await client.send_message(message.channel, "Nodewar announcement exited successfully")
+                return
+            await client.send_message(message.channel, "Now insert the server")
+            server = await client.wait_for_message(author=message.author,channel=channel,timeout=60)
+            if server is None or server.content == '$exit':
+                await client.send_message(message.channel, "Nodewar announcement exited successfully")
+                return
+            await client.send_message(message.channel, "A nodewar message will be sent to the nodewar channel!")
+            if date.content not in WARDict.keys():
+                cdate = date.content 
+                WARDict.setdefault(date.content,[]).append(place.content)
+                WARDict.setdefault(date.content,[]).append(server.content)
+                write_war_list()
+                print(WARDict)
+                cwar = await client.send_message(nwchannel, "@everyone Signup by reacting here for {} Nodewar that will be fought at {} on {}".format(datetime.datetime.strptime(date.content, '%d-%m-%Y').strftime("%A"),place.content,server.content))
+                await client.add_reaction(cwar,'\U0001F1FE')
+                await update_war_sheet(message,cdate)
+                warid = cwar.id
+            else:
+                await client.send_message(message.channel,"Nodewar already added, please remove the old one or kys")
+    
+    elif message.content.startswith('!list'):
+        if message.channel.id == '465920848738385920' and await is_officer(message):
+            await client.send_message(message.channel,json.dumps(WARDict, indent=2)
+                                  .replace("[","").replace("'","").replace("]","").strip('}').strip('{')
+                                  .replace(",","").replace('"',""))
+    
+    elif message.content.startswith('!attendance'):
+        if await is_officer(message):
+            msg = format_input("!attendance", message.content)
+            if msg and check_day(msg) and msg in WARDict.keys():
+                list = WARDict[msg][2:]
+                await show_war_embed(message.channel,list,msg)
+    
+    elif message.content.startswith('!rmwar'):
+        if await is_officer(message):
+            msg = format_input("!rmwar", message.content)
+            if msg and check_day(msg) and msg in WARDict.keys():
+                del WARDict[msg]
+                delete_war(msg)
+                write_war_list()
+                await client.send_message(message.channel,"{} nodewar removed".format(msg))
+
+    elif message.content.startswith('!limbo'):
+        global wid
+        if await is_officer(message):
+            limboch = message.author.server.get_channel("465920848738385920")
+            wid = await welcome_embed(limboch)
+
+@client.event
+async def on_reaction_add(reaction, user):
+    global WARDict
+    global warid
+    global cdate
+    global wid
+    #print(warid)
+    #print(reaction.message.id)
+    if user.id == '512916240956915713': #botid
+        print("bot")
+        return
+    elif reaction.message.id == warid and str(reaction.emoji) == "\U0001F1FE":
+        print(user.display_name)
+        WARDict.setdefault(cdate,[]).append(user.display_name)
+        write_war_list()
+        await update_war_sheet(reaction.message,cdate)
+        print(WARDict)
+        return
+    elif reaction.message.id == wid and str(reaction.emoji) == "\U0001F4D5":
+        role1 = discord.utils.get(user.server.roles, name="Recruit")
+        await client.replace_roles(user, role1)
+    elif reaction.message.id == wid and str(reaction.emoji) == "\U0001F4D9":
+        role2 = discord.utils.get(user.server.roles, name="Other Guilds")
+        await client.replace_roles(user, role2)
+    elif reaction.message.id == wid and str(reaction.emoji) == "\U0001F4D8":
+        role3 = discord.utils.get(user.server.roles, name="Friends")
+        await client.replace_roles(user, role3)
+    elif str(reaction.emoji) not in {"\U0001F1FE","\U0001F4D5","\U0001F4D9","\U0001F4D8"}:
+        print("wrong emote")
+        await client.remove_reaction(reaction.message,reaction.emoji,user)
+
+
+async def show_war_embed(channel,list,date):
+    embed = discord.Embed()
+    embed.set_thumbnail(url=client.user.avatar_url)
+    embed.set_author(name="{} Nodewar Attendance".format(date),icon_url=client.user.avatar_url)
+    for i in range(len(list)):
+        embed.add_field(name="{}".format(list[i]),value='\u200b',inline=False)
+    embed.set_footer(text="OwO Bot", icon_url=client.user.avatar_url)
+    await client.send_message(channel,embed=embed)
+
+async def welcome_embed(channel):
+    embed = discord.Embed()
+    
+    embed.set_thumbnail(url=client.user.avatar_url)
+    embed.add_field(name="You **Must** Choose A Side! You Have 60 Seconds Before You Are Stuck In Limbo **Forever!**",value='\u200b',inline=False)
+    embed.add_field(name="Recruit/Member",value="If You Are A Potential Recruit Or An Already Accepted Member Click \U0001F4D5",inline=False)
+    embed.add_field(name="Other Guild",value="If You Are A Member Of Another Guild \U0001F4D9",inline=False)
+    embed.add_field(name="Friend",value="If You Are A Friend Of The Guild Or It's Members Click \U0001F4D8",inline=False)
+    embed.set_footer(text='Welcome To Limbo!!', icon_url="https://cdn.discordapp.com/avatars/170960401926848513/9f942640cfc9648d808b2ae9cfae4b7c.png?size=128")
+    msg = await client.send_message(channel,embed=embed)
+    await client.add_reaction(msg,'\U0001F4D5')
+    await client.add_reaction(msg,'\U0001F4D9')
+    await client.add_reaction(msg,'\U0001F4D8')
+    return msg.id
+             
 client.run('')#add your bot token here
+
