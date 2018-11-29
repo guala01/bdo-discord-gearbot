@@ -301,7 +301,7 @@ async def on_message(message):
                     print("stats_list: ",stats_list)
                     if (len(stats_list) == 4 and stats_list[0].isnumeric() and 
                         stats_list[1].isnumeric() and stats_list[2].isnumeric() and validators.url(stats_list[3])):
-                        if(stats_list[3].endswith(".png") or stats_list[3].endswith(".jpg") ):
+                        if(stats_list[3].lower().endswith(".png") or stats_list[3].lower().endswith(".jpg") ):
                             GEARdict[message.author.id].pop(4)
                             GEARdict[message.author.id].insert(4,stats_list[0]) #ap
                             GEARdict[message.author.id].pop(5)
@@ -383,7 +383,7 @@ async def on_message(message):
                                 print("stats_list: ",stats_list)
                                 if (len(stats_list) == 4 and stats_list[0].isnumeric() and 
                                     stats_list[1].isnumeric() and stats_list[2].isnumeric() and validators.url(stats_list[3])):
-                                    if(stats_list[3].endswith(".png") or stats_list[3].endswith(".jpg") ):
+                                    if(stats_list[3].lower().endswith(".png") or stats_list[3].lower().endswith(".jpg") ):
                                         GEARdict[id].pop(4)
                                         GEARdict[id].insert(4,stats_list[0]) #ap
                                         GEARdict[id].pop(5)
