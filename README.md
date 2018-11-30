@@ -15,7 +15,9 @@ Bot has:
 
 !update level + level to update your level
 
-!sheet to export/update the gear on a new google spreadsheet (bot automatically updates the gear on the sheet for you, so this command is to use only if you want a full update for any reason or to update a new sheet)
+!fsupdate +@mention to manually update someone 
+
+ !manual +@mention to manually add someone gear the syntax after the mention is the same as the normal command
 
 !remove + @mention or Discord ID
 
