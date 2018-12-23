@@ -40,7 +40,7 @@ cell_awaap_list = wks.range('G2:G100')
 cell_dp_list = wks.range('H2:H100')
 cell_gearpic_list = wks.range('I2:I100')
 
-bdo_classes = ['warrior', 'valkyrie', 'valk', 'wizard', 'wiz', 'witch', 'ranger', 'sorceress', 'sorc', 'berserker', 'tamer', 'musa', 'maehwa', 'lahn', 'ninja', 'kunoichi', 'kuno', 'dk', 'DK', 'striker','stroker', 'mystic']
+bdo_classes = ['archer','warrior', 'valkyrie', 'valk', 'wizard', 'wiz', 'witch', 'ranger', 'sorceress', 'sorc', 'berserker', 'tamer', 'musa', 'maehwa', 'lahn', 'ninja', 'kunoichi', 'kuno', 'dk', 'DK', 'striker','stroker', 'mystic']
 #missing check on eof and IOE
 def write_gear_list():
     global GEARdict
